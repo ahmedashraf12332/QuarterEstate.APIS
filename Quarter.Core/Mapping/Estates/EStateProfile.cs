@@ -1,0 +1,25 @@
+﻿using AutoMapper;
+using Quarter.Core.Dto;
+using Quarter.Core.Entites;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Quarter.Core.Mapping.Estates
+{
+    public class EstateProfile:Profile
+    {
+        public EstateProfile()
+        {
+            CreateMap<Estate, EstateDto>()
+                .ForMember(d => d.EstateLocationName, options => options.MapFrom(s => s.EstateLocation.City)).
+                ForMember(d => d.EstateLocationName, options => options.MapFrom(s => s.EstateLocation.Area)).
+                    ForMember(d => d.EstateTypeName, options => options.MapFrom(s => s.EstateType.Name));
+
+            CreateMap<EstateLocation, EstateLocationDto>();
+            CreateMap<EstateType, EstateTypeDto>();
+        }
+    }
+}
