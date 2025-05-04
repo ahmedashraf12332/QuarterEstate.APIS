@@ -7,11 +7,13 @@ using Quarter.Core;
 using Quarter.Core.Entities.Identity;
 using Quarter.Core.Mapping.Estates;
 using Quarter.Core.ServiceContract;
-
+using Quarter.Core.Services.Contract;
 using Quarter.Repostory;
 using Quarter.Repostory.Data.Context;
 using Quarter.Repostory.Identity.Contexts;
 using Quarter.Service.Service.Estates;
+using Quarter.Service.Service.User;
+using Quarter.Service.Tokens;
 using QuarterEstate.APIS.Errors;
 
 namespace Store.APIS.Helper
@@ -63,6 +65,8 @@ namespace Store.APIS.Helper
         {
             services.AddScoped<IProductService, EstateService>();
             services.AddScoped<IUnitofWork, UnitOfWork>();
+            services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IUserService, UserService>();
 
             return services;
         }
