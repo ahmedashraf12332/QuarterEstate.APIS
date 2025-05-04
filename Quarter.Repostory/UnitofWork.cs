@@ -12,16 +12,17 @@ using System.Threading.Tasks;
 
 namespace Quarter.Repostory
 {
-    public class UnitofWork : IUnitofWork
+    public class UnitOfWork : IUnitofWork
     {
         private readonly QuarterDbContexts _context;
         private readonly Dictionary<string, object> _repositories;
 
-        public UnitofWork(QuarterDbContexts context)
+        public UnitOfWork(QuarterDbContexts context)
         {
-            _context = context;
-            _repositories = new Dictionary<string, object>();
+            _context = context; // ✅ تصحيح تمرير الـ context
+            _repositories = new Dictionary<string, object>(); // ✅ تصحيح نوع المتغير
         }
+
         public async Task<int> CompleteAsync()
         {
             return await _context.SaveChangesAsync();
@@ -37,7 +38,7 @@ namespace Quarter.Repostory
                 _repositories.Add(type, repository);
             }
 
-            return (IGenericRepository<TEntity, TKey>)_repositories[type]; 
+            return (IGenericRepository<TEntity, TKey>)_repositories[type]; // ✅ استخدام تحويل صريح
         }
     }
 }

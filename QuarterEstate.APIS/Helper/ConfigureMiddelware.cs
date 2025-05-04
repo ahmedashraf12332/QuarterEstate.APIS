@@ -1,0 +1,55 @@
+﻿
+
+using Microsoft.EntityFrameworkCore;
+using Quarter.Repostory;
+using Quarter.Repostory.Data.Context;
+using QuarterEstate.APIS;
+using QuarterEstate.APIS.Middleware;
+
+namespace Quarter.APIS.Helper
+{
+    public static class ConfigureMiddelware
+    {
+        public static async Task<IApplicationBuilder> ConfigureMiddlewareAsync(this WebApplication app)
+        {
+            using var scope=app.Services.CreateScope();
+            var service = scope.ServiceProvider;
+            var context = service.GetRequiredService<QuarterDbContexts>();
+           
+                   var LoggerFactory = service.GetRequiredService<ILoggerFactory>();
+
+            try
+            {
+                await context.Database.MigrateAsync();
+                await StoreDbContextSeed.SeedAsync(context);
+                
+            }
+            catch (Exception ex)
+            {
+                var logger = LoggerFactory.CreateLogger<Program>();
+                logger.LogError(ex, "في مشاكل ياصحبي");
+            }
+            app.UseMiddleware<ExceptionMiddleware>();
+            // Configure the HTTP request pipeline.
+
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
+            app.UseStatusCodePagesWithReExecute("/error/{0}");
+            app.UseStaticFiles();
+            app.UseHttpsRedirection();
+
+            app.UseAuthorization();
+
+
+            app.MapControllers();
+            return app;
+
+
+        }
+
+    }
+}

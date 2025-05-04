@@ -1,44 +1,59 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Quarter.Core.Dto;
+using Quarter.Core.Helper;
 using Quarter.Core.ServiceContract;
+using Quarter.Core.Specifications.Estatee;
+using QuarterEstate.APIS.Errors;
 
-namespace QuarterEstate.APIS.Controllers
+
+namespace Store.APIS.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class EstateController : ControllerBase
+    public class ProductsController : ControllerBase
     {
-        private readonly IProductService _productService;
+        private readonly IProductService _EstateService;
 
-        public EstateController(IProductService productService)
+        public ProductsController(IProductService EstateService)
         {
-            _productService = productService;
+            _EstateService = EstateService;
         }
+
+        [ProducesResponseType(typeof(PaginationResponse<EstateDto>), StatusCodes.Status200OK)]
         [HttpGet]
-        public async Task<IActionResult> GetAllEstate()
+        public async Task<ActionResult<PaginationResponse<EstateDto>>> GetAllProduct([FromQuery] EstateSpecParams EstateSpec)
         {
-            var result = await _productService.GetAllEstatesAsync();
+            // Adjusted method call to match the signature of IProductService
+            var result = await _EstateService.GetAllEstatesAsync();
             return Ok(result);
         }
-        [HttpGet("EstateLocation")]
 
-        public async Task<IActionResult> GetAllBrandsAsync()
+        [HttpGet("EstateLocation")]
+        [ProducesResponseType(typeof(IEnumerable<EstateLocationDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<EstateLocationDto>>> GetAllBrands()
         {
-            var result = await _productService.GetAllloctionAsync();
+            var result = await _EstateService.GetAllloctionAsync();
             return Ok(result);
         }
-        [HttpGet("Estatetypes")]
-        public async Task<IActionResult> GetAllTypesAsync()
+
+        [HttpGet("EstateType")]
+        [ProducesResponseType(typeof(IEnumerable<EstateDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<EstateDto>>> GetAllTypes()
         {
-            var result = await _productService.GetAllTypeAsync();
+            var result = await _EstateService.GetAllTypeAsync(); // Fixed service reference
             return Ok(result);
         }
+
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof( EstateDto ), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetProductById(int? id)
         {
-            if (id is null) return BadRequest("Invalid id !!");
-            var result = await _productService.GetEstateById(id.Value);
-            if (result is null) return NotFound("the product not found");
+            if (id is null) return BadRequest(new ApiErrorResponse(400));
+            var result = await _EstateService.GetEstateById(id.Value); // Fixed service reference
+            if (result is null) return NotFound(new ApiErrorResponse(404));
             return Ok(result);
         }
     }

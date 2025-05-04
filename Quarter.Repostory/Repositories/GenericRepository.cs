@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Quarter.Core.Entites;
 using Quarter.Core.Repositories.Contract;
+using Quarter.Core.Specifications;
 using Quarter.Repostory.Data.Context;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Quarter.Repostory.Repositories
 {
-    public class GenericRepository<TEntity, TKey> : IGenericRepository<TEntity, TKey> where TEntity : BaseEntity<TKey>
+    public class GenericRepository<TEntity, Tkey> : IGenericRepository<TEntity, Tkey> where TEntity : BaseEntity<Tkey>
     {
         private readonly QuarterDbContexts _context;
 
@@ -18,6 +19,7 @@ namespace Quarter.Repostory.Repositories
         {
             _context = context;
         }
+
         public async Task AddAsync(TEntity entity)
         {
             await _context.AddAsync(entity);
@@ -27,7 +29,6 @@ namespace Quarter.Repostory.Repositories
         {
             _context.Remove(entity);
         }
-
 
         public async Task<IEnumerable<TEntity>> GetAllAsync()
         {
@@ -42,8 +43,17 @@ namespace Quarter.Repostory.Repositories
 
             return await _context.Set<TEntity>().ToListAsync();
         }
+        private IQueryable<TEntity> ApplySpecifications(ISpecifications<TEntity, Tkey> spec)
+        {
+            return SpecificationsEvaluator<TEntity, Tkey>.GetQuery(_context.Set<TEntity>(), spec);
+        }
 
-        public async Task<TEntity> GetAsync(TKey id)
+        public async Task<IEnumerable<TEntity>> GetAllWithSpecAsync(ISpecifications<TEntity, Tkey> spec)
+        {
+            return await ApplySpecifications(spec).ToListAsync();
+        }
+
+        public async Task<TEntity> GetAsync(Tkey id)
         {
             if (typeof(TEntity) == typeof(Estate))
             {
@@ -55,7 +65,16 @@ namespace Quarter.Repostory.Repositories
 
             return await _context.Set<TEntity>().FindAsync(id);
         }
-        
+
+        public async Task<int> GetCountAsync(ISpecifications<TEntity, Tkey> spec)
+        {
+            return await ApplySpecifications(spec).CountAsync();
+        }
+
+        public async Task<TEntity> GetWithSpecAsync(ISpecifications<TEntity, Tkey> spec)
+        {
+            return await ApplySpecifications(spec).FirstOrDefaultAsync();
+        }
 
         public void Update(TEntity entity)
         {
