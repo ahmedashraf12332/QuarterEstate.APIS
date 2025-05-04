@@ -1,5 +1,6 @@
 ﻿
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,8 @@ using Quarter.Service.Service.Estates;
 using Quarter.Service.Service.User;
 using Quarter.Service.Tokens;
 using QuarterEstate.APIS.Errors;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Store.APIS.Helper
 {
@@ -28,7 +31,7 @@ namespace Store.APIS.Helper
             services.AddAutoMapperService(configuration);
             services.AddUserDefinedService();
             services.AddInvalidModelResponseService();
-        
+            services.AddAuthenTicationService(configuration);
             services.AddIdentityService();
             return services;
         }
@@ -103,6 +106,33 @@ namespace Store.APIS.Helper
         {
             services.AddIdentity<AppUser, IdentityRole>()
                 .AddEntityFrameworkStores<StoreIdentityDbContext>();
+
+            return services;
+
+
+
+        }
+        private static IServiceCollection AddAuthenTicationService(this IServiceCollection services ,IConfiguration configuration)
+        {
+            services.AddAuthentication(option =>
+            {
+              option.DefaultAuthenticateScheme= JwtBearerDefaults.AuthenticationScheme;
+                option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+
+                    ValidIssuer = configuration["Jwt:Issuer"],
+                    ValidAudience = configuration["Jwt:Audience"],
+                    ValidateIssuerSigningKey =true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"])),
+                };
+            }) ;
 
             return services;
 
