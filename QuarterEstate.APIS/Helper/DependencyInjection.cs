@@ -31,7 +31,7 @@ namespace Store.APIS.Helper
             services.AddAutoMapperService(configuration);
             services.AddUserDefinedService();
             services.AddInvalidModelResponseService();
-            services.AddAuthenTicationService(configuration);
+            services.AddAuthenticationService(configuration);
             services.AddIdentityService();
             return services;
         }
@@ -112,32 +112,33 @@ namespace Store.APIS.Helper
 
 
         }
-        private static IServiceCollection AddAuthenTicationService(this IServiceCollection services ,IConfiguration configuration)
+        private static IServiceCollection AddAuthenticationService(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddAuthentication(option =>
+            services.AddAuthentication(options =>
             {
-              option.DefaultAuthenticateScheme= JwtBearerDefaults.AuthenticationScheme;
-                option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
             {
-
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
 
                     ValidIssuer = configuration["Jwt:Issuer"],
                     ValidAudience = configuration["Jwt:Audience"],
-                    ValidateIssuerSigningKey =true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"])),
+
+                    // اختياري: لمنع التأخير في انتهاء صلاحية التوكن
+                    ClockSkew = TimeSpan.Zero
                 };
-            }) ;
+            });
 
             return services;
-
-
-
         }
+
     }
 }
