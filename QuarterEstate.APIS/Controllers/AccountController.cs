@@ -24,5 +24,14 @@ namespace QuarterEstate.APIS.Controllers
             return Ok(user);
 
         }
+        [HttpPost("Regisiter")]
+        public async Task<ActionResult> Register(RegisterDto loginDto)
+        {
+            var user = await _userService.RegisterAsync(loginDto);
+            if (user is null) return BadRequest(new ApiErrorResponse(StatusCodes.Status400BadRequest,"Invalid Regsitrration"));
+            return Ok(user);
+
+        }
+
     }
 }
