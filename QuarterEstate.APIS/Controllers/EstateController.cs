@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Quarter.Core.Dto;
@@ -21,10 +22,10 @@ namespace Quarter.APIS.Controllers
         {
             _EstateService = EstateService;
         }
-
+        [Authorize(AuthenticationSchemes= JwtBearerDefaults.AuthenticationScheme)]
         [ProducesResponseType(typeof(PaginationResponse<EstateDto>), StatusCodes.Status200OK)]
         [HttpGet]
-        [Authorize]
+       
         public async Task<ActionResult<PaginationResponse<EstateDto>>> GetAllEstate([FromQuery] EstateSpecParams EstateSpec)
         {
             // Adjusted method call to match the signature of IProductService

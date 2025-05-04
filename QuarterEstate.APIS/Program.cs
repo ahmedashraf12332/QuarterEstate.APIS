@@ -23,6 +23,7 @@ namespace QuarterEstate.APIS
             // Add services to the container.
             builder.Services.AddDependency(builder.Configuration);
 
+
             var app = builder.Build();
             await app.ConfigureMiddlewareAsync();
 

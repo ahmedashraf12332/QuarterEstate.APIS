@@ -18,6 +18,9 @@ using Quarter.Service.Tokens;
 using QuarterEstate.APIS.Errors;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Options;
 
 namespace Store.APIS.Helper
 {
@@ -32,7 +35,7 @@ namespace Store.APIS.Helper
             services.AddUserDefinedService();
             services.AddInvalidModelResponseService();
             services.AddAuthenticationService(configuration);
-            services.AddIdentityService();
+            
             return services;
         }
 
@@ -102,42 +105,46 @@ namespace Store.APIS.Helper
             });
             return services;
         }
-        private static IServiceCollection AddIdentityService(this IServiceCollection services)
-        {
-            services.AddIdentity<AppUser, IdentityRole>()
-                .AddEntityFrameworkStores<StoreIdentityDbContext>();
-
-            return services;
-
-
-
-        }
+       
+        
         private static IServiceCollection AddAuthenticationService(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddAuthentication(options =>
+           services.AddScoped(typeof(IAuthenticationService),typeof(AuthenticationService));
+            services.AddIdentity<AppUser, IdentityRole>(options =>
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
+
+
+            }
+                ).AddEntityFrameworkStores<StoreIdentityDbContext>();
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer( options =>
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
+                    options.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ValidateAudience = true,
+                        ValidAudience = configuration["Jwt:Audience"],
+                        ValidateIssuer = true,
+                        ValidIssuer = configuration["Jwt:Issuer"],
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"] )),
+                        ValidateLifetime = true,
+                        ClockSkew=TimeSpan.FromDays(double.Parse(configuration["Jwt:DurationInDays"]))
+                    };
 
-                    ValidIssuer = configuration["Jwt:Issuer"],
-                    ValidAudience = configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"])),
+                }
+                ).AddJwtBearer("Beaer02", options =>
+                {
 
-                    // اختياري: لمنع التأخير في انتهاء صلاحية التوكن
-                    ClockSkew = TimeSpan.Zero
-                };
-            });
 
-            return services;
+
+                }
+
+                )
+                .AddCookie("XXX" ,options =>
+                {
+
+                });
+                return services;
         }
 
     }
