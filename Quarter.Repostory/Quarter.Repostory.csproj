@@ -14,4 +14,8 @@
     <ProjectReference Include="..\Quarter.Core\Quarter.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Identity\Migrations\" />
+  </ItemGroup>
+
 </Project>

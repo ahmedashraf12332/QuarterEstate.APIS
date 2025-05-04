@@ -1,12 +1,16 @@
 ﻿
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Quarter.Core;
+using Quarter.Core.Entities.Identity;
 using Quarter.Core.Mapping.Estates;
 using Quarter.Core.ServiceContract;
+
 using Quarter.Repostory;
 using Quarter.Repostory.Data.Context;
+using Quarter.Repostory.Identity.Contexts;
 using Quarter.Service.Service.Estates;
 using QuarterEstate.APIS.Errors;
 
@@ -22,7 +26,8 @@ namespace Store.APIS.Helper
             services.AddAutoMapperService(configuration);
             services.AddUserDefinedService();
             services.AddInvalidModelResponseService();
-
+        
+            services.AddIdentityService();
             return services;
         }
 
@@ -46,6 +51,9 @@ namespace Store.APIS.Helper
             services.AddDbContext<QuarterDbContexts>(option =>
             {
                 option.UseSqlServer(configuration.GetConnectionString("DefaultConnection12"));
+            });
+            services.AddDbContext<StoreIdentityDbContext>(option => {
+                option.UseSqlServer(configuration.GetConnectionString("IdentityConnection"));
             });
 
             return services;
@@ -86,6 +94,16 @@ namespace Store.APIS.Helper
                 };
             });
             return services;
+        }
+        private static IServiceCollection AddIdentityService(this IServiceCollection services)
+        {
+            services.AddIdentity<AppUser, IdentityRole>()
+                .AddEntityFrameworkStores<StoreIdentityDbContext>();
+
+            return services;
+
+
+
         }
     }
 }

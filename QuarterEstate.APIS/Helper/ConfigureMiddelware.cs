@@ -1,8 +1,12 @@
 ﻿
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Quarter.Core.Entities.Identity;
+using Quarter.Repository.Identity;
 using Quarter.Repostory;
 using Quarter.Repostory.Data.Context;
+using Quarter.Repostory.Identity.Contexts;
 using QuarterEstate.APIS;
 using QuarterEstate.APIS.Middleware;
 
@@ -15,14 +19,17 @@ namespace Quarter.APIS.Helper
             using var scope=app.Services.CreateScope();
             var service = scope.ServiceProvider;
             var context = service.GetRequiredService<QuarterDbContexts>();
-           
                    var LoggerFactory = service.GetRequiredService<ILoggerFactory>();
+            var identitycontext = service.GetRequiredService<StoreIdentityDbContext>();
+            var UserManager = service.GetRequiredService<UserManager<AppUser>>();
 
             try
             {
                 await context.Database.MigrateAsync();
                 await StoreDbContextSeed.SeedAsync(context);
-                
+                await identitycontext.Database.MigrateAsync();
+                await StoreIdentityDbContextSeed.SeedAppUserAsync(UserManager);
+
             }
             catch (Exception ex)
             {
