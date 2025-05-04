@@ -12,7 +12,7 @@ namespace Quarter.APIS.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    
     public class ProductsController : ControllerBase
     {
         private readonly IProductService _EstateService;
@@ -24,7 +24,8 @@ namespace Quarter.APIS.Controllers
 
         [ProducesResponseType(typeof(PaginationResponse<EstateDto>), StatusCodes.Status200OK)]
         [HttpGet]
-        public async Task<ActionResult<PaginationResponse<EstateDto>>> GetAllProduct([FromQuery] EstateSpecParams EstateSpec)
+        [Authorize]
+        public async Task<ActionResult<PaginationResponse<EstateDto>>> GetAllEstate([FromQuery] EstateSpecParams EstateSpec)
         {
             // Adjusted method call to match the signature of IProductService
             var result = await _EstateService.GetAllEstatesAsync();
@@ -33,15 +34,15 @@ namespace Quarter.APIS.Controllers
 
         [HttpGet("EstateLocation")]
         [ProducesResponseType(typeof(IEnumerable<EstateLocationDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<EstateLocationDto>>> GetAllBrands()
+        public async Task<ActionResult<IEnumerable<EstateLocationDto>>> GetAllloction()
         {
             var result = await _EstateService.GetAllloctionAsync();
             return Ok(result);
         }
 
         [HttpGet("EstateType")]
-        [ProducesResponseType(typeof(IEnumerable<EstateDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<EstateDto>>> GetAllTypes()
+        [ProducesResponseType(typeof(IEnumerable<EstateTypeDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<EstateTypeDto>>> GetAllTypes()
         {
             var result = await _EstateService.GetAllTypeAsync(); // Fixed service reference
             return Ok(result);
