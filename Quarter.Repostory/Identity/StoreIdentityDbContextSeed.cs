@@ -13,8 +13,8 @@ namespace Quarter.Repository.Identity
         public async static Task SeedAppUserAsync(UserManager<AppUser> _userManager)
         {
             var user = new AppUser
-            {
-                Email = "ashraftiger83@gmail.com",
+            {  Id= "1", 
+                Email = "ashraftiger883@gmail.com",
                 DisplayName = "Ashraf Tiger",
                 UserName = "ashraf",
                 Address = new Address()
