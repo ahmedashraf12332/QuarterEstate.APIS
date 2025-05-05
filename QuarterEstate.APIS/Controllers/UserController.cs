@@ -20,12 +20,23 @@ namespace QuarterEstate.APIS.Controllers
         }
 
         // جلب كل المستخدمين
+       
         [HttpGet("get-all-users")]
-        public async Task<IActionResult> GetAllUsers()
+        public async Task<IActionResult> GetAllUsers([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
         {
-            var users = await _userService.GetAllUsersAsync();
-            return Ok(users);
+            var (users, count) = await _userService.GetAllUsersAsync(pageIndex, pageSize);
+
+            var result = new
+            {
+                TotalCount = count,
+                PageIndex = pageIndex,
+                PageSize = pageSize,
+                Users = users
+            };
+
+            return Ok(result);
         }
+
 
         // جلب مستخدم بالـ ID
         [HttpGet("get-user-by-id/{id}")]

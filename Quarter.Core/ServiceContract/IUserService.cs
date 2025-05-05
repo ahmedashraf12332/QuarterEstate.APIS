@@ -21,6 +21,6 @@ namespace Quarter.Core.Services.Contract
         Task<ManageUserDto> AddUserAsync(RegisterDto dto);
         Task<bool> UpdateUserAsync(string id, UpdateUserDto dto);
         Task<bool> DeleteUserAsync(string id);
-
+        Task<(List<UserDto> users, int totalCount)> GetAllUsersAsync(int pageIndex, int pageSize);
     }
 }

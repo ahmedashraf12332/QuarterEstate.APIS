@@ -46,8 +46,11 @@ namespace Quarter.Service.Service.User
             if (!result.Succeeded) return null;
             return new UserDto()
             {
+                Id = user.Id,
                 DisplayName = user.DisplayName,
+                UserName = user.UserName,
                 Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
                 Token = await _tokenService.CreateTokenAsync(user, _userManager)
 
             };
@@ -56,18 +59,31 @@ namespace Quarter.Service.Service.User
 
         public async Task<UserDto> RegisterAsync(RegisterDto registerDto)
         {
-            if ( await CheckEmailExitsAsync(registerDto.Email)) return null;
-            var user =new AppUser()
+            if (await CheckEmailExitsAsync(registerDto.Email)) return null;
+
+            var user = new AppUser()
             {
                 Email = registerDto.Email,
                 DisplayName = registerDto.DisplayName,
                 UserName = registerDto.Email.Split("@")[0],
-               
-               PhoneNumber = registerDto.PhoneNumber
+                PhoneNumber = registerDto.PhoneNumber
             };
-           var result= await  _userManager.CreateAsync(user,registerDto.Password);
-            if(!result.Succeeded) return null;
-            return new UserDto() { DisplayName = user.DisplayName, Email = user.Email, Token = await _tokenService.CreateTokenAsync(user, _userManager) };
+
+            var result = await _userManager.CreateAsync(user, registerDto.Password);
+            if (!result.Succeeded) return null;
+
+            // ✅ اسحب المستخدم من جديد للحصول على الـ Id المولّد
+            var savedUser = await _userManager.FindByEmailAsync(user.Email);
+
+            return new UserDto()
+            {
+                Id = savedUser.Id,
+                DisplayName = savedUser.DisplayName,
+                Email = savedUser.Email,
+                UserName = savedUser.UserName,
+                PhoneNumber = savedUser.PhoneNumber,
+                Token = await _tokenService.CreateTokenAsync(savedUser, _userManager)
+            };
         }
         public async Task<bool> CheckEmailExitsAsync(string email)
         {
@@ -143,6 +159,25 @@ namespace Quarter.Service.Service.User
 
             var result = await _userManager.DeleteAsync(user);
             return result.Succeeded;
+        }
+        public async Task<(List<UserDto> users, int totalCount)> GetAllUsersAsync(int pageIndex, int pageSize)
+        {
+            var totalCount = await _context.Users.CountAsync();
+
+            var users = await _context.Users
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .Select(user => new UserDto
+                {
+                    Id = user.Id,
+                    DisplayName = user.DisplayName,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    PhoneNumber = user.PhoneNumber
+                })
+                .ToListAsync();
+
+            return (users, totalCount);
         }
     }
 }
