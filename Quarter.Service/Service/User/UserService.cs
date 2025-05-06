@@ -37,25 +37,30 @@ namespace Quarter.Service.Service.User
 
         public async Task<UserDto> LoginAsync(LoginDto loginDto)
         {
-           var user = await _userManager.FindByEmailAsync(loginDto.Email);
-
-            if (user == null)
-            
-                return null;
-         var result =await  _signInManager.CheckPasswordSignInAsync(user,loginDto.Password,false);
-            if (!result.Succeeded) return null;
-            return new UserDto()
+            try
             {
-                Id = user.Id,
-                DisplayName = user.DisplayName,
-                UserName = user.UserName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
-                Token = await _tokenService.CreateTokenAsync(user, _userManager)
+                var user = await _userManager.FindByEmailAsync(loginDto.Email);
+                if (user == null)
+                    throw new UnauthorizedAccessException("البريد الإلكتروني أو كلمة المرور غير صحيحة");
 
-            };
-          
+                var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
+                if (!result.Succeeded)
+                    throw new UnauthorizedAccessException("البريد الإلكتروني أو كلمة المرور غير صحيحة");
+
+                return new UserDto()
+                {
+                    Id = user.Id,
+                    DisplayName = user.DisplayName,
+                    Email = user.Email,
+                    Token = await _tokenService.CreateTokenAsync(user, _userManager)
+                };
+            }
+            catch (Exception ex)
+            {
+                throw; // سيتم التعامل معها في middleware
+            }
         }
+        
 
         public async Task<UserDto> RegisterAsync(RegisterDto registerDto)
         {
