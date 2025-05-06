@@ -25,13 +25,26 @@ namespace QuarterEstate.APIS.Controllers
             this._tokenService = tokenService;
             _userManager = userManager;
         }
-        [HttpPost("Login")]
-        public async Task<ActionResult> Login(LoginDto loginDto)
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginDto loginDto)
         {
-            var user =  await _userService.LoginAsync(loginDto);
-            if (user is null)return Unauthorized(new ApiErrorResponse(StatusCodes.Status401Unauthorized));
-            return Ok(user);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
+            try
+            {
+                var user = await _userService.LoginAsync(loginDto);
+
+                if (user == null)
+                    return Unauthorized(new { message = "بريد إلكتروني أو كلمة مرور غير صحيحة" });
+
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+               
+                return StatusCode(500, new { message = "حدث خطأ داخلي في الخادم" });
+            }
         }
         [HttpPost("Regisiter")]
         public async Task<ActionResult> Register(RegisterDto loginDto)
