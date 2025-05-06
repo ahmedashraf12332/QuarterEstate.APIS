@@ -22,7 +22,7 @@ namespace Quarter.APIS.Controllers
         {
             _EstateService = EstateService;
         }
-        [Authorize(AuthenticationSchemes= JwtBearerDefaults.AuthenticationScheme)]
+
         [ProducesResponseType(typeof(PaginationResponse<EstateDto>), StatusCodes.Status200OK)]
         [HttpGet]
        
