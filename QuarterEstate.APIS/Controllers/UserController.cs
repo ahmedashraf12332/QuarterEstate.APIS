@@ -42,7 +42,7 @@ namespace QuarterEstate.APIS.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpGet("get-user-by-id/{id}")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(string id)
         {
             if (!User.IsInRole("Admin"))
