@@ -10,5 +10,6 @@ namespace Quarter.Core.Dto.Auth
     {
         public string DisplayName { get; set; }
         public string PhoneNumber { get; set; }
+        public string? Email { get; set; }
     }
 }

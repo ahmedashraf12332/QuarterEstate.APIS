@@ -59,12 +59,10 @@ namespace Quarter.Service.Service.User
 
         public async Task<UserDto> RegisterAsync(RegisterDto registerDto)
         {
-            if (await CheckEmailExitsAsync(registerDto.Email)) return null;
-
-            var user = new AppUser()
+            var user = new AppUser
             {
-                Email = registerDto.Email,
                 DisplayName = registerDto.DisplayName,
+                Email = registerDto.Email,
                 UserName = registerDto.Email.Split("@")[0],
                 PhoneNumber = registerDto.PhoneNumber
             };
@@ -72,8 +70,10 @@ namespace Quarter.Service.Service.User
             var result = await _userManager.CreateAsync(user, registerDto.Password);
             if (!result.Succeeded) return null;
 
-            // ✅ اسحب المستخدم من جديد للحصول على الـ Id المولّد
             var savedUser = await _userManager.FindByEmailAsync(user.Email);
+
+            // 👇 نضيف المستخدم لروول "User"
+            await _userManager.AddToRoleAsync(savedUser, "User");
 
             return new UserDto()
             {
@@ -142,14 +142,23 @@ namespace Quarter.Service.Service.User
 
         public async Task<bool> UpdateUserAsync(string id, UpdateUserDto dto)
         {
-            var user = await _context.Users.FindAsync(id);
+
+            var user = await _userManager.FindByIdAsync(id);
             if (user == null) return false;
 
             user.DisplayName = dto.DisplayName ?? user.DisplayName;
             user.PhoneNumber = dto.PhoneNumber ?? user.PhoneNumber;
 
-            var result = await _userManager.UpdateAsync(user);
-            return result.Succeeded;
+            if (!string.IsNullOrWhiteSpace(dto.Email) && dto.Email != user.Email)
+            {
+                var setEmailResult = await _userManager.SetEmailAsync(user, dto.Email);
+                if (!setEmailResult.Succeeded) return false;
+
+                var setUserNameResult = await _userManager.SetUserNameAsync(user, dto.Email.Split('@')[0]);
+                if (!setUserNameResult.Succeeded) return false;
+            }
+
+            return (await _userManager.UpdateAsync(user)).Succeeded;
         }
 
         public async Task<bool> DeleteUserAsync(string id)

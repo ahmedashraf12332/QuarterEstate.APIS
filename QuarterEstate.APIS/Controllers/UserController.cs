@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.General;
@@ -20,10 +21,13 @@ namespace QuarterEstate.APIS.Controllers
         }
 
         // جلب كل المستخدمين
-       
-        [HttpGet("get-all-users")]
+        
+        [HttpGet]
         public async Task<IActionResult> GetAllUsers([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
         {
+            if (!User.IsInRole("Admin"))
+                return Forbid("You are not authorized to access this");
+
             var (users, count) = await _userService.GetAllUsersAsync(pageIndex, pageSize);
 
             var result = new
@@ -37,42 +41,56 @@ namespace QuarterEstate.APIS.Controllers
             return Ok(result);
         }
 
-
-        // جلب مستخدم بالـ ID
+        [Authorize(Roles = "Admin")]
         [HttpGet("get-user-by-id/{id}")]
         public async Task<IActionResult> GetUserById(string id)
         {
+            if (!User.IsInRole("Admin"))
+                return Forbid("You are not authorized to access this");
+
             var user = await _userService.GetUserByIdAsync(id);
             if (user == null) return NotFound("User not found");
             return Ok(user);
         }
 
-        // إضافة مستخدم جديد
-        [HttpPost("add-user")]
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
         public async Task<IActionResult> AddUser([FromBody] RegisterDto dto)
         {
+            if (!User.IsInRole("Admin"))
+                return Forbid("You are not authorized to add users");
+
             var createdUser = await _userService.AddUserAsync(dto);
             if (createdUser == null) return BadRequest("User could not be created");
             return Ok(createdUser);
         }
 
-        // تعديل بيانات مستخدم
-        [HttpPut("update-user/{id}")]
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDto dto)
         {
+            if (!User.IsInRole("Admin"))
+                return Forbid("You are not authorized to update user data");
+
             var result = await _userService.UpdateUserAsync(id, dto);
             if (!result) return NotFound("User not found or update failed");
-            return NoContent();
+
+            return Ok("User updated successfully");
         }
 
-        // حذف مستخدم
-        [HttpDelete("delete-user/{id}")]
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
+            if (!User.IsInRole("Admin"))
+                return Forbid("You are not authorized to delete users");
+
             var result = await _userService.DeleteUserAsync(id);
             if (!result) return NotFound("User not found or delete failed");
-            return NoContent();
+
+            return Ok("User deleted successfully");
         }
+
     }
 
 }

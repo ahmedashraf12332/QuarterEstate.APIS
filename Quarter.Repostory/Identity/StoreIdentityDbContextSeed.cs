@@ -10,13 +10,23 @@ namespace Quarter.Repository.Identity
 {
     public static class StoreIdentityDbContextSeed
     {
-        public async static Task SeedAppUserAsync(UserManager<AppUser> _userManager)
+        public async static Task SeedAppUserAsync(UserManager<AppUser> _userManager, RoleManager<IdentityRole> _roleManager)
         {
+            var adminRole = "Admin";
+            var userRole = "User";
+
+            if (!await _roleManager.RoleExistsAsync(adminRole))
+                await _roleManager.CreateAsync(new IdentityRole(adminRole));
+
+            if (!await _roleManager.RoleExistsAsync(userRole))
+                await _roleManager.CreateAsync(new IdentityRole(userRole));
+
             var user = new AppUser
-            {  Id= "1", 
-                Email = "ashraftiger883@gmail.com",
-                DisplayName = "Ashraf Tiger",
-                UserName = "ashraf",
+            {
+                Id = "1",
+                Email = "Admin@gmail.com",
+                DisplayName = "Admin",
+                UserName = "Admin",
                 Address = new Address()
                 {
                     FName = "Ashraf",
@@ -27,11 +37,13 @@ namespace Quarter.Repository.Identity
                 }
             };
 
-            // Check if the user already exists, and if not, create it
-            if (await _userManager.FindByEmailAsync(user.Email) == null)
+            var existingUser = await _userManager.FindByEmailAsync(user.Email);
+            if (existingUser == null)
             {
-                await _userManager.CreateAsync(user, "Ahmed123!"); // Replace with a secure password
+                await _userManager.CreateAsync(user, "Ahmed123!");
+                await _userManager.AddToRoleAsync(user, adminRole);
             }
         }
+
     }
 }

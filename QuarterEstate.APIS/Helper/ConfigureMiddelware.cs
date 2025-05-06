@@ -22,13 +22,13 @@ namespace Quarter.APIS.Helper
                    var LoggerFactory = service.GetRequiredService<ILoggerFactory>();
             var identitycontext = service.GetRequiredService<StoreIdentityDbContext>();
             var UserManager = service.GetRequiredService<UserManager<AppUser>>();
-
+            var roleManager = service.GetRequiredService<RoleManager<IdentityRole>>();
             try
             {
                 await context.Database.MigrateAsync();
                 await StoreDbContextSeed.SeedAsync(context);
                 await identitycontext.Database.MigrateAsync();
-                await StoreIdentityDbContextSeed.SeedAppUserAsync(UserManager);
+                await StoreIdentityDbContextSeed.SeedAppUserAsync(UserManager, roleManager);
 
             }
             catch (Exception ex)
